@@ -35,8 +35,7 @@ export default function AdminLoginPage() {
           </div>
           <h1 className="font-display font-extrabold text-xl text-neutral-title">Admin Console</h1>
           <p className="text-xs text-neutral-desc">
-            Sandbox mode: use passcode <code className="bg-slate-100 px-1 rounded font-mono">clearjee</code> unless
-            ADMIN_PASSCODE is set.
+            Enter your admin passcode to access the control center.
           </p>
         </div>
 

@@ -1,14 +1,39 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createServerClient, createBrowserClient, parse, stringify } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+export function createServerSupabaseClient() {
+  const cookieStore = cookies();
 
-export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // Handle cookie set error
+          }
+        },
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            // Handle cookie remove error
+          }
+        },
+      },
+    }
+  );
+}
 
-export const createClient = () => {
-  if (!isSupabaseConfigured) {
-    // Elegant precise typing fallback instead of broad 'any' to satisfy ESLint
-    return null as unknown as ReturnType<typeof createBrowserClient>
-  }
-  return createBrowserClient(supabaseUrl!, supabaseAnonKey!)
+export function createBrowserSupabaseClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 }

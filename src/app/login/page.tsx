@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signInWithGoogleAction } from '@/app/actions/auth'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import { Sparkles, BarChart3, GraduationCap, Laptop, ShieldCheck, Globe, ArrowRight, Info } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter()
   
   // Auth state
@@ -290,6 +290,14 @@ export default function LoginPage() {
       <div className="absolute top-20 left-20 h-72 w-72 bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse-slow pointer-events-none" />
 
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen w-full flex items-center justify-center bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+      <LoginPageContent />
+    </Suspense>
   )
 }
 

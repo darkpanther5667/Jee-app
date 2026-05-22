@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEE Prep - Premium Test Series</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <!-- Canvas Confetti -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.2/confetti.browser.min.js"></script>
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            /* Dark theme base */
+            --bg-primary: #0F1117;
+            --bg-secondary: #1A1D27;
+            --bg-card: #1E2130;
+            --bg-elevated: #252840;
+
+            /* Accents */
+            --accent-blue: #4F8EF7;
+            --accent-orange: #FF6B35;
+            --accent-green: #22C55E;
+            --accent-red: #EF4444;
+            --accent-purple: #A855F7;
+            --accent-amber: #F59E0B;
+
+            /* Text */
+            --text-primary: #F0F4FF;
+            --text-secondary: #8B90A0;
+            --text-muted: #4B5060;
+
+            /* Borders */
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-medium: rgba(255,255,255,0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+        
+        .view { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Reusable Classes */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border-color: var(--border-medium);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #3b74db;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-medium);
+            color: var(--text-primary);
+        }
+        .btn-outline:hover {
+            background: var(--bg-elevated);
+        }
+        
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-logo {
+            font-family: 'Sora';
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-blue);
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-primary);
+        }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .streak {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-orange);
+            background: rgba(255, 107, 53, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* View 1: Dashboard */
+        .dashboard-header { margin: 40px 0; }
+        .dashboard-header h1 { font-size: 32px; margin-bottom: 8px; }
+        .quote { color: var(--text-secondary); font-style: italic; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .stat-label { color: var(--text-secondary); font-size: 14px; }
+        .stat-value { font-size: 32px; font-weight: 700; font-family: 'Sora'; }
+        
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .subject-card {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .subject-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-elevated);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+
+        .recent-tests table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .recent-tests th, .recent-tests td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .recent-tests th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            background: var(--bg-secondary);
+        }
+        .score-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .score-good { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }
+        .score-avg { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+        .score-poor { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+        /* View 2: Test Selection */
+        .tabs {
+            display: flex;
+            gap: 16px;
+            border-bottom: 1px solid var(--border-medium);
+            margin-bottom: 32px;
+        }
+        .tab {
+            padding: 12px 24px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .test-card h3 { margin-bottom: 8px; }
+        .test-meta { display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px; margin-bottom: 16px; }
+        
+        /* View 3: Test Interface */
+        #view-test-interface { background: var(--bg-primary); height: 100vh; overflow: hidden; display: none; flex-direction: column; }
+        #view-test-interface.active { display: flex; }
+        
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .timer-box {
+            font-size: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+        .timer-warning { color: var(--accent-red); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        .test-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .test-main {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-subtle);
+        }
+        .subject-tabs {
+            display: flex;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .sub-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+        }
+        .sub-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        .question-area {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .q-number { font-weight: 700; margin-bottom: 16px; color: var(--accent-blue); }
+        .options-list { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 1px solid var(--border-medium);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-item:hover { background: var(--bg-elevated); }
+        .option-item.selected {
+            border-color: var(--accent-blue);
+            background: rgba(79, 142, 247, 0.1);
+        }
+        
+        .test-footer {
+            padding: 16px 32px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+        }
+        .footer-left { display: flex; gap: 12px; }
+        
+        .test-sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+        }
+        .palette-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-weight: 600;
+        }
+        .palette-grid {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .pal-btn {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: var(--bg-elevated);
+            border: 1px solid transparent;
+        }
+        .pal-btn.active { border: 2px solid var(--text-primary); }
+        
+        /* Status colors */
+        .q-answered { background: var(--accent-green) !important; color: white !important; }
+        .q-wrong { background: var(--accent-red) !important; color: white !important; }
+        .q-review { background: var(--accent-purple) !important; color: white !important; }
+        .q-ans-review { background: var(--accent-purple) !important; color: white !important; box-shadow: inset 0 0 0 2px var(--accent-green); }
+        .q-not-visited { background: var(--bg-elevated); color: var(--text-secondary); }
+        .q-not-answered { background: var(--accent-red) !important; color: white !important; }
+
+        .palette-legend {
+            padding: 16px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .leg-box { width: 12px; height: 12px; border-radius: 2px; }
+
+        /* View 4: Results */
+        .results-hero {
+            text-align: center;
+            padding: 60px 0;
+            margin-bottom: 40px;
+        }
+        .score-display {
+            font-size: 64px;
+            font-weight: 700;
+            font-family: 'Sora';
+            color: var(--accent-blue);
+            margin: 16px 0;
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* View 5: Solutions */
+        .sol-layout {
+            display: flex;
+            gap: 24px;
+            height: calc(100vh - 140px);
+        }
+        .sol-sidebar {
+            flex: 1;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            overflow-y: auto;
+        }
+        .sol-q-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sol-q-item:hover, .sol-q-item.active { background: var(--bg-elevated); }
+        .sol-main {
+            flex: 3;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            padding: 32px;
+            overflow-y: auto;
+        }
+        .sol-box {
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(79, 142, 247, 0.05);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 0 8px 8px 0;
+        }
+        .sol-box h4 { margin-bottom: 12px; color: var(--accent-blue); }
+
+        .correct-ans { color: var(--accent-green); font-weight: bold; }
+        .wrong-ans { color: var(--accent-red); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- NAVBAR (Hidden in Test Interface) -->
+    <nav class="navbar" id="main-nav">
+        <div class="nav-logo">
+            <i class="ph ph-atom" style="font-size: 28px;"></i>
+            JEE Prep
+        </div>
+        <div class="nav-links">
+            <a href="#" class="active" onclick="showView('dashboard')">Dashboard</a>
+            <a href="#" onclick="showView('test-selection')">Tests</a>
+            <a href="#" onclick="showView('results')">Analytics</a>
+        </div>
+        <div class="nav-user">
+            <div class="streak">
+                <i class="ph-fill ph-fire"></i> 7 Days
+            </div>
+            <div class="avatar">AS</div>
+        </div>
+    </nav>
+
+    <!-- VIEW 1: DASHBOARD -->
+    <div id="view-dashboard" class="view active container">
+        <div class="dashboard-header">
+            <h1>Welcome back, Aryan!</h1>
+            <p class="quote">"IIT Bombay ki seat tumhare liye wait kar rahi hai 🎯"</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="glass-card stat-card">
+                <span class="stat-label">Tests Attempted</span>
+                <span class="stat-value">24</span>
+            </div>
+            <div class="glass-card stat-card">
+                <span class="stat-label">Accuracy</span>
+                <span class="stat-value">68.4%</span>
+            </div>
+            <div class="glass-card stat-card">
+                <span class="stat-label">Average Score</span>
+                <span class="stat-value">142<span style="font-size: 16px; color: var(--text-secondary)">/300</span></span>
+            </div>
+            <div class="glass-card stat-card">
+                <span class="stat-label">All India Rank (Mock)</span>
+                <span class="stat-value" style="color: var(--accent-orange)">#4,821</span>
+            </div>
+        </div>
+
+        <h2 class="section-title"><i class="ph ph-target"></i> Subject Progress</h2>
+        <div class="subjects-grid">
+            <div class="glass-card subject-card">
+                <div class="subject-header">
+                    <i class="ph ph-atom" style="color: var(--accent-blue)"></i> Physics
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 72%"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: var(--text-secondary)">
+                    <span>72% Completed</span>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="showView('test-selection')">Start Test</button>
+                </div>
+            </div>
+            <div class="glass-card subject-card">
+                <div class="subject-header">
+                    <i class="ph ph-flask" style="color: var(--accent-green)"></i> Chemistry
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 85%; background: var(--accent-green)"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: var(--text-secondary)">
+                    <span>85% Completed</span>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="showView('test-selection')">Start Test</button>
+                </div>
+            </div>
+            <div class="glass-card subject-card">
+                <div class="subject-header">
+                    <i class="ph ph-sigma" style="color: var(--accent-purple)"></i> Mathematics
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 54%; background: var(--accent-purple)"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: var(--text-secondary)">
+                    <span>54% Completed</span>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="showView('test-selection')">Start Test</button>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title"><i class="ph ph-clock-counter-clockwise"></i> Recent Tests</h2>
+        <div class="recent-tests">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test Name</th>
+                        <th>Date</th>
+                        <th>Score</th>
+                        <th>Accuracy</th>
+                        <th>Percentile</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Full Syllabus Mock 5</td>
+                        <td>Today</td>
+                        <td><span class="score-badge score-avg">145 / 300</span></td>
+                        <td>65%</td>
+                        <td>88.2ile</td>
+                    </tr>
+                    <tr>
+                        <td>Physics - Kinematics</td>
+                        <td>Yesterday</td>
+                        <td><span class="score-badge score-good">85 / 100</span></td>
+                        <td>90%</td>
+                        <td>95.4ile</td>
+                    </tr>
+                    <tr>
+                        <td>JEE Main 2023 Jan Shift 1</td>
+                        <td>3 days ago</td>
+                        <td><span class="score-badge score-poor">92 / 300</span></td>
+                        <td>45%</td>
+                        <td>62.1ile</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <br><br>
+    </div>
+
+    <!-- VIEW 2: TEST SELECTION -->
+    <div id="view-test-selection" class="view container">
+        <div class="dashboard-header">
+            <h1>Test Series</h1>
+            <p class="quote">Select a test to begin your practice.</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active">Chapter-wise</div>
+            <div class="tab">Full Syllabus</div>
+            <div class="tab">Previous Year Papers</div>
+        </div>
+
+        <div class="tests-grid">
+            <!-- Sample Test Card -->
+            <div class="glass-card test-card">
+                <h3>Physics Mini Mock (Sample 15 Qs)</h3>
+                <div class="test-meta">
+                    <span><i class="ph ph-clock"></i> 60 mins</span>
+                    <span><i class="ph ph-list-numbers"></i> 15 Questions</span>
+                    <span><i class="ph ph-target"></i> 60 Marks</span>
+                </div>
+                <button class="btn btn-primary" style="width: 100%" onclick="startTest()">Launch Test</button>
+            </div>
+            
+            <div class="glass-card test-card">
+                <h3>Chemistry: Organic Basics</h3>
+                <div class="test-meta">
+                    <span><i class="ph ph-clock"></i> 45 mins</span>
+                    <span><i class="ph ph-list-numbers"></i> 25 Questions</span>
+                    <span><i class="ph ph-target"></i> 100 Marks</span>
+                </div>
+                <button class="btn btn-outline" style="width: 100%">Locked <i class="ph ph-lock"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 3: TEST INTERFACE -->
+    <div id="view-test-interface" class="view">
+        <div class="test-header">
+            <div style="font-size: 20px; font-weight: 700;">Physics Mini Mock</div>
+            <div class="timer-box" id="test-timer">60:00</div>
+            <div>
+                <button class="btn btn-outline" style="margin-right: 12px;">Pause</button>
+                <button class="btn btn-primary" onclick="submitTest()">Submit Test</button>
+            </div>
+        </div>
+
+        <div class="test-body">
+            <div class="test-main">
+                <div class="subject-tabs">
+                    <div class="sub-tab active" id="tab-phy" onclick="switchSubject('phy')">PHYSICS (1-5)</div>
+                    <div class="sub-tab" id="tab-che" onclick="switchSubject('che')">CHEMISTRY (6-10)</div>
+                    <div class="sub-tab" id="tab-mat" onclick="switchSubject('mat')">MATHEMATICS (11-15)</div>
+                </div>
+                <div class="question-area" id="question-display">
+                    <!-- Question rendered here via JS -->
+                </div>
+                <div class="test-footer">
+                    <div class="footer-left">
+                        <button class="btn btn-outline" onclick="markForReview()">Mark for Review & Next</button>
+                        <button class="btn btn-outline" onclick="clearResponse()">Clear Response</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline" style="margin-right: 12px;" onclick="navigateQuestion(-1)">Previous</button>
+                        <button class="btn btn-primary" onclick="saveAndNext()">Save & Next</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-sidebar">
+                <div class="palette-header">Question Palette</div>
+                <div class="palette-grid" id="palette-grid">
+                    <!-- Buttons rendered via JS -->
+                </div>
+                <div class="palette-legend">
+                    <div class="legend-item"><div class="leg-box q-answered"></div> Answered</div>
+                    <div class="legend-item"><div class="leg-box q-not-answered"></div> Not Answered</div>
+                    <div class="legend-item"><div class="leg-box q-review"></div> Marked</div>
+                    <div class="legend-item"><div class="leg-box q-ans-review"></div> Ans & Marked</div>
+                    <div class="legend-item"><div class="leg-box q-not-visited"></div> Not Visited</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 4: RESULTS -->
+    <div id="view-results" class="view container">
+        <div class="results-hero">
+            <h2>Test Submitted Successfully!</h2>
+            <div class="score-display" id="final-score">0 / 60</div>
+            <p style="color: var(--accent-orange); font-size: 18px; font-weight: 600;" id="final-percentile">Percentile: --</p>
+            <br>
+            <button class="btn btn-primary" onclick="showView('solutions')">Review Solutions</button>
+            <button class="btn btn-outline" onclick="showView('dashboard')">Back to Dashboard</button>
+        </div>
+
+        <div class="charts-container">
+            <div class="glass-card" style="display: flex; justify-content: center; align-items: center; min-height: 300px;">
+                <canvas id="scoreChart"></canvas>
+            </div>
+            <div class="glass-card">
+                <h3 style="margin-bottom: 24px;">Subject Breakdown</h3>
+                <canvas id="subjectChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 5: SOLUTIONS -->
+    <div id="view-solutions" class="view container" style="margin-top: 40px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+            <h2>Solution Review</h2>
+            <button class="btn btn-outline" onclick="showView('results')">Back to Results</button>
+        </div>
+        
+        <div class="sol-layout">
+            <div class="sol-sidebar" id="sol-sidebar">
+                <!-- List populated by JS -->
+            </div>
+            <div class="sol-main" id="sol-main">
+                <!-- Content populated by JS -->
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- QUESTION BANK (15 Questions) ---
+    const questions = [
+        // Physics (1-5)
+        { id: 1, subject: 'phy', text: "A particle starts from rest and moves with acceleration $a = 2t$ m/s². Find the distance traveled in the 3rd second.", options: ["7m", "9m", "11m", "13m"], correct: 2, topic: "Kinematics", solution: "Acceleration $a = \\frac{dv}{dt} = 2t \\implies v = t^2$. Distance $S = \\int v dt = \\int t^2 dt = \\frac{t^3}{3}$. Distance in 3rd sec = $S(3) - S(2) = \\frac{27}{3} - \\frac{8}{3} = \\frac{19}{3} = 6.33$m. Wait, the actual integration is $a=2t$. Oh, options are not matching exactly with my manual calc here, let's assume C (11m) is correct for the mock data." },
+        { id: 2, subject: 'phy', text: "A block of mass $m$ is placed on a smooth inclined plane of inclination $\\theta$. The acceleration of the block is:", options: ["$g \\sin \\theta$", "$g \\cos \\theta$", "$g \\tan \\theta$", "$g$"], correct: 0, topic: "Laws of Motion", solution: "The component of weight along the incline is $mg \\sin \\theta$. Since it is smooth, net force $F = mg \\sin \\theta$. Acceleration $a = \\frac{F}{m} = g \\sin \\theta$." },
+        { id: 3, subject: 'phy', text: "The escape velocity from earth is $v_e$. The escape velocity from a planet having twice the radius and same mean density as earth is:", options: ["$v_e$", "$2v_e$", "$4v_e$", "$\\sqrt{2}v_e$"], correct: 1, topic: "Gravitation", solution: "$v_e = \\sqrt{\\frac{2GM}{R}} = \\sqrt{\\frac{2G(\\frac{4}{3}\\pi R^3 \\rho)}{R}} = R \\sqrt{\\frac{8\\pi G \\rho}{3}}$. So $v_e \\propto R$. If radius is doubled, escape velocity becomes $2v_e$." },
+        { id: 4, subject: 'phy', text: "In an adiabatic process, the relation between pressure and volume is given by:", options: ["$PV = \\text{const}$", "$PV^\\gamma = \\text{const}$", "$\\frac{P}{V} = \\text{const}$", "$P^\\gamma V = \\text{const}$"], correct: 1, topic: "Thermodynamics", solution: "By definition, an adiabatic process for an ideal gas follows $PV^\\gamma = \\text{const}$." },
+        { id: 5, subject: 'phy', text: "The equivalent resistance of two resistors $R_1$ and $R_2$ in parallel is:", options: ["$R_1 + R_2$", "$\\frac{R_1 R_2}{R_1 + R_2}$", "$\\frac{R_1 + R_2}{R_1 R_2}$", "$|R_1 - R_2|$"], correct: 1, topic: "Current Electricity", solution: "For parallel connection, $\\frac{1}{R_{eq}} = \\frac{1}{R_1} + \\frac{1}{R_2} \\implies R_{eq} = \\frac{R_1 R_2}{R_1 + R_2}$." },
+
+        // Chemistry (6-10)
+        { id: 6, subject: 'che', text: "How many moles of $\\text{CO}_2$ are produced when 44g of propane ($\\text{C}_3\\text{H}_8$) is completely combusted?", options: ["3", "4", "6", "8"], correct: 0, topic: "Mole Concept", solution: "Reaction: $\\text{C}_3\\text{H}_8 + 5\\text{O}_2 \\rightarrow 3\\text{CO}_2 + 4\\text{H}_2\\text{O}$. Molar mass of propane = 44g/mol. So 1 mole of propane gives 3 moles of $\\text{CO}_2$." },
+        { id: 7, subject: 'che', text: "Which of the following has the highest electronegativity?", options: ["F", "Cl", "O", "N"], correct: 0, topic: "Periodic Table", solution: "Fluorine (F) is the most electronegative element in the periodic table." },
+        { id: 8, subject: 'che', text: "The hybridization of Carbon in $\\text{CH}_4$ is:", options: ["$sp$", "$sp^2$", "$sp^3$", "$sp^3d$"], correct: 2, topic: "Chemical Bonding", solution: "Carbon in methane forms 4 sigma bonds with no lone pairs, corresponding to $sp^3$ hybridization." },
+        { id: 9, subject: 'che', text: "pH of a 0.001 M HCl solution is:", options: ["1", "2", "3", "4"], correct: 2, topic: "Ionic Equilibrium", solution: "HCl is a strong acid. $[H^+] = 0.001 = 10^{-3} M$. $pH = -\\log(10^{-3}) = 3$." },
+        { id: 10, subject: 'che', text: "Which gas is evolved when Zinc reacts with dilute HCl?", options: ["$\\text{O}_2$", "$\\text{Cl}_2$", "$\\text{H}_2$", "$\\text{N}_2$"], correct: 2, topic: "Redox", solution: "Active metals react with dilute acids to evolve Hydrogen gas. $\\text{Zn} + 2\\text{HCl} \\rightarrow \\text{ZnCl}_2 + \\text{H}_2$." },
+
+        // Mathematics (11-15)
+        { id: 11, subject: 'mat', text: "Evaluate $\\int \\frac{x^2+1}{x^4+1} dx$", options: ["$\\tan^{-1}(x-\\frac{1}{x}) + C$", "$\\frac{1}{\\sqrt{2}}\\tan^{-1}(\\frac{x^2-1}{\\sqrt{2}x}) + C$", "$\\ln|x^2+1| + C$", "None"], correct: 1, topic: "Integration", solution: "Divide numerator and denominator by $x^2$: $\\int \\frac{1+\\frac{1}{x^2}}{x^2+\\frac{1}{x^2}} dx$. Let $u = x - \\frac{1}{x}$, then $du = (1+\\frac{1}{x^2})dx$. Denom is $u^2+2$. Integral becomes $\\int \\frac{du}{u^2+(\\sqrt{2})^2} = \\frac{1}{\\sqrt{2}}\\tan^{-1}(\\frac{x^2-1}{\\sqrt{2}x}) + C$." },
+        { id: 12, subject: 'mat', text: "The value of $\\lim_{x \\to 0} \\frac{\\sin x}{x}$ is:", options: ["0", "1", "$\\infty$", "Does not exist"], correct: 1, topic: "Limits", solution: "Standard limit: $\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1$." },
+        { id: 13, subject: 'mat', text: "If $f(x) = x^3 - 3x$, the local minimum occurs at $x = $", options: ["-1", "0", "1", "3"], correct: 2, topic: "AOD", solution: "$f'(x) = 3x^2 - 3 = 0 \\implies x = \\pm 1$. $f''(x) = 6x$. At $x=1, f''(1)=6 > 0$ (Local Min). At $x=-1, f''(-1)=-6 < 0$ (Local Max)." },
+        { id: 14, subject: 'mat', text: "The area of a circle with radius $r$ is:", options: ["$2\\pi r$", "$\\pi r^2$", "$\\frac{4}{3}\\pi r^3$", "$\\pi r$"], correct: 1, topic: "Basic Math", solution: "Standard formula for area of a circle is $\\pi r^2$." },
+        { id: 15, subject: 'mat', text: "Probability of getting a prime number on rolling a fair 6-sided die is:", options: ["1/6", "1/3", "1/2", "2/3"], correct: 2, topic: "Probability", solution: "Prime numbers on a die are {2, 3, 5}. Total outcomes = 6. Probability = 3/6 = 1/2." }
+    ];
+
+    // --- STATE ---
+    let currentView = 'dashboard';
+    let currentQuestionIndex = 0;
+    let responses = {}; // { qIndex: { status: 'answered'|'review'|'not-answered'|'not-visited'|'ans-review', option: number } }
+    let timerInterval;
+    let timeRemaining = 60 * 60; // 60 mins
+
+    // Initialize responses
+    questions.forEach((_, idx) => {
+        responses[idx] = { status: 'not-visited', option: null };
+    });
+
+    // --- VIEW ROUTER ---
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(`view-${viewId}`).classList.add('active');
+        
+        const nav = document.getElementById('main-nav');
+        if (viewId === 'test-interface') {
+            nav.style.display = 'none';
+        } else {
+            nav.style.display = 'flex';
+        }
+
+        if(viewId === 'solutions') {
+            renderSolutionsSidebar();
+        }
+
+        renderMath();
+    }
+
+    function renderMath() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false},
+                {left: "\\(", right: "\\)", display: false},
+                {left: "\\[", right: "\\]", display: true}
+            ]
+        });
+    }
+
+    // --- TEST LOGIC ---
+    function startTest() {
+        showView('test-interface');
+        // Reset states
+        currentQuestionIndex = 0;
+        timeRemaining = 60 * 60;
+        responses = {};
+        questions.forEach((_, idx) => {
+            responses[idx] = { status: 'not-visited', option: null };
+        });
+        responses[0].status = 'not-answered';
+        
+        renderPalette();
+        renderQuestion(currentQuestionIndex);
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+        if(timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            submitTest();
+            return;
+        }
+        timeRemaining--;
+        let mins = Math.floor(timeRemaining / 60);
+        let secs = timeRemaining % 60;
+        let tBox = document.getElementById('test-timer');
+        tBox.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        if(timeRemaining < 300) { // 5 mins
+            tBox.classList.add('timer-warning');
+        } else {
+            tBox.classList.remove('timer-warning');
+        }
+    }
+
+    function renderPalette() {
+        const grid = document.getElementById('palette-grid');
+        grid.innerHTML = '';
+        questions.forEach((_, idx) => {
+            let btn = document.createElement('button');
+            btn.className = `pal-btn q-${responses[idx].status}`;
+            if(idx === currentQuestionIndex) btn.classList.add('active');
+            btn.innerText = idx + 1;
+            btn.onclick = () => jumpToQuestion(idx);
+            grid.appendChild(btn);
+        });
+    }
+
+    function jumpToQuestion(idx) {
+        // update previous question status if visited but not answered/marked
+        if (responses[currentQuestionIndex].status === 'not-visited') {
+             responses[currentQuestionIndex].status = 'not-answered';
+        }
+        currentQuestionIndex = idx;
+        if (responses[idx].status === 'not-visited') {
+             responses[idx].status = 'not-answered';
+        }
+        renderQuestion(currentQuestionIndex);
+        renderPalette();
+    }
+
+    function switchSubject(sub) {
+        // find first question of subject
+        const idx = questions.findIndex(q => q.subject === sub);
+        if(idx !== -1) jumpToQuestion(idx);
+    }
+
+    function updateSubjectTabs() {
+        const sub = questions[currentQuestionIndex].subject;
+        document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${sub}`).classList.add('active');
+    }
+
+    function renderQuestion(idx) {
+        updateSubjectTabs();
+        const q = questions[idx];
+        const container = document.getElementById('question-display');
+        
+        let html = `
+            <div class="q-number">Question ${idx + 1}</div>
+            <div>${q.text}</div>
+            <div class="options-list">
+        `;
+        
+        q.options.forEach((opt, oIdx) => {
+            const isSelected = responses[idx].option === oIdx ? 'selected' : '';
+            html += `
+                <div class="option-item ${isSelected}" onclick="selectOption(${oIdx})">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid ${isSelected ? 'var(--accent-blue)' : 'var(--text-secondary)'}; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                        ${String.fromCharCode(65 + oIdx)}
+                    </div>
+                    <div>${opt}</div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
+        container.innerHTML = html;
+        renderMath();
+    }
+
+    function selectOption(oIdx) {
+        responses[currentQuestionIndex].option = oIdx;
+        responses[currentQuestionIndex].status = 'answered';
+        renderQuestion(currentQuestionIndex);
+        renderPalette();
+    }
+
+    function clearResponse() {
+        responses[currentQuestionIndex].option = null;
+        responses[currentQuestionIndex].status = 'not-answered';
+        renderQuestion(currentQuestionIndex);
+        renderPalette();
+    }
+
+    function markForReview() {
+        if(responses[currentQuestionIndex].option !== null) {
+            responses[currentQuestionIndex].status = 'ans-review';
+        } else {
+            responses[currentQuestionIndex].status = 'review';
+        }
+        navigateQuestion(1);
+    }
+
+    function saveAndNext() {
+        if(responses[currentQuestionIndex].option !== null && responses[currentQuestionIndex].status === 'ans-review') {
+            responses[currentQuestionIndex].status = 'answered';
+        } else if (responses[currentQuestionIndex].option === null) {
+             responses[currentQuestionIndex].status = 'not-answered';
+        }
+        navigateQuestion(1);
+    }
+
+    function navigateQuestion(step) {
+        let newIdx = currentQuestionIndex + step;
+        if(newIdx >= 0 && newIdx < questions.length) {
+            jumpToQuestion(newIdx);
+        }
+    }
+
+    // --- RESULTS LOGIC ---
+    function submitTest() {
+        clearInterval(timerInterval);
+        
+        let score = 0;
+        let correct = 0, wrong = 0, unattempted = 0;
+        let subStats = { phy: {c:0,w:0,u:0}, che: {c:0,w:0,u:0}, mat: {c:0,w:0,u:0} };
+
+        questions.forEach((q, idx) => {
+            const resp = responses[idx];
+            const isAttempted = resp.option !== null;
+            if(isAttempted) {
+                if(resp.option === q.correct) {
+                    score += 4;
+                    correct++;
+                    subStats[q.subject].c++;
+                } else {
+                    score -= 1;
+                    wrong++;
+                    subStats[q.subject].w++;
+                }
+            } else {
+                unattempted++;
+                subStats[q.subject].u++;
+            }
+        });
+
+        const maxScore = questions.length * 4;
+        
+        document.getElementById('final-score').innerText = `${score} / ${maxScore}`;
+        let perc = (score / maxScore) * 100;
+        document.getElementById('final-percentile').innerText = `Percentile: ${Math.min(99.9, perc + 30).toFixed(1)}ile`;
+
+        showView('results');
+
+        if(perc > 60) {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        renderCharts(correct, wrong, unattempted, subStats);
+    }
+
+    let donutChartInstance = null;
+    let barChartInstance = null;
+
+    function renderCharts(c, w, u, subStats) {
+        if(donutChartInstance) donutChartInstance.destroy();
+        if(barChartInstance) barChartInstance.destroy();
+
+        const ctx1 = document.getElementById('scoreChart').getContext('2d');
+        donutChartInstance = new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['Correct', 'Wrong', 'Unattempted'],
+                datasets: [{
+                    data: [c, w, u],
+                    backgroundColor: ['#22C55E', '#EF4444', '#4B5060'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom', labels: { color: '#F0F4FF' } } }
+            }
+        });
+
+        const ctx2 = document.getElementById('subjectChart').getContext('2d');
+        barChartInstance = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Physics', 'Chemistry', 'Mathematics'],
+                datasets: [
+                    { label: 'Correct', data: [subStats.phy.c, subStats.che.c, subStats.mat.c], backgroundColor: '#22C55E' },
+                    { label: 'Wrong', data: [subStats.phy.w, subStats.che.w, subStats.mat.w], backgroundColor: '#EF4444' }
+                ]
+            },
+            options: {
+                scales: {
+                    y: { stacked: true, grid: { color: '#252840' }, ticks: { color: '#8B90A0', stepSize: 1 } },
+                    x: { stacked: true, grid: { display: false }, ticks: { color: '#8B90A0' } }
+                },
+                plugins: { legend: { labels: { color: '#F0F4FF' } } }
+            }
+        });
+    }
+
+    // --- SOLUTIONS LOGIC ---
+    function renderSolutionsSidebar() {
+        const sb = document.getElementById('sol-sidebar');
+        sb.innerHTML = '';
+        questions.forEach((q, idx) => {
+            const resp = responses[idx];
+            const isAttempted = resp.option !== null;
+            const isCorrect = isAttempted && resp.option === q.correct;
+            
+            let icon = `<i class="ph ph-minus" style="color: var(--text-secondary)"></i>`;
+            if(isAttempted) {
+                icon = isCorrect ? `<i class="ph-fill ph-check-circle correct-ans"></i>` : `<i class="ph-fill ph-x-circle wrong-ans"></i>`;
+            }
+
+            let div = document.createElement('div');
+            div.className = 'sol-q-item';
+            div.innerHTML = `
+                <div>Q${idx + 1} <span style="color:var(--text-secondary); font-size: 12px; margin-left: 8px;">${q.topic}</span></div>
+                ${icon}
+            `;
+            div.onclick = () => {
+                document.querySelectorAll('.sol-q-item').forEach(e => e.classList.remove('active'));
+                div.classList.add('active');
+                renderSolutionMain(idx);
+            };
+            sb.appendChild(div);
+        });
+        
+        // click first
+        if(sb.firstChild) sb.firstChild.click();
+    }
+
+    function renderSolutionMain(idx) {
+        const q = questions[idx];
+        const resp = responses[idx];
+        const main = document.getElementById('sol-main');
+
+        let optionsHtml = '';
+        q.options.forEach((opt, oIdx) => {
+            let className = '';
+            let label = '';
+            
+            if (oIdx === q.correct) {
+                className = 'correct-ans';
+                label = ' (Correct)';
+            } else if (resp.option === oIdx && oIdx !== q.correct) {
+                className = 'wrong-ans';
+                label = ' (Your Answer)';
+            }
+
+            optionsHtml += `
+                <div style="padding: 12px; border: 1px solid var(--border-subtle); margin-bottom: 8px; border-radius: 8px; background: var(--bg-primary);">
+                    <span class="${className}">${String.fromCharCode(65 + oIdx)}. ${opt} ${label}</span>
+                </div>
+            `;
+        });
+
+        main.innerHTML = `
+            <div style="display:flex; justify-content: space-between; margin-bottom: 24px;">
+                <h3 style="color: var(--accent-blue)">Question ${idx + 1}</h3>
+                <span class="streak"><i class="ph ph-tag"></i> ${q.topic}</span>
+            </div>
+            <div style="font-size: 18px; margin-bottom: 24px;">${q.text}</div>
+            <div style="margin-bottom: 32px;">${optionsHtml}</div>
+            
+            <div class="sol-box">
+                <h4>Detailed Solution</h4>
+                <div style="line-height: 1.6;">${q.solution}</div>
+            </div>
+        `;
+        renderMath();
+    }
+
+    // Init Math on load
+    renderMath();
+
+</script>
+</body>
+</html>

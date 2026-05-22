@@ -2,9 +2,12 @@
 
 import fs from 'fs'
 import path from 'path'
+import { requireAdmin } from '@/lib/admin/auth'
 import { getQuestionsAction } from './question'
 import { Test, TestAttempt } from '@/types/test'
 import { Question } from '@/types/question'
+
+// ─── FIX #3: Every admin action now calls requireAdmin() first ────────────────
 
 const MOCK_ATTEMPTS_PATH = path.join(process.cwd(), 'src', 'app', 'actions', 'mock_attempts.json')
 const MOCK_CUSTOM_TESTS_PATH = path.join(process.cwd(), 'src', 'app', 'actions', 'mock_custom_tests.json')
@@ -24,6 +27,8 @@ function writeJson<T>(filePath: string, data: T) {
 }
 
 export async function getAdminStatsAction() {
+  await requireAdmin()
+
   const qRes = await getQuestionsAction()
   const questions = qRes.questions ?? []
 
@@ -52,6 +57,8 @@ export async function getAdminStatsAction() {
 }
 
 export async function getAdminTestsAction() {
+  await requireAdmin()
+
   const tests = readJson<Test[]>(MOCK_CUSTOM_TESTS_PATH, [])
   return { success: true, tests }
 }
@@ -68,6 +75,8 @@ export async function createAdminTestAction(input: {
   available_till?: string
   is_free?: boolean
 }) {
+  await requireAdmin()
+
   if (input.question_ids.length === 0) {
     return { success: false, error: 'Select at least one question for the test.' }
   }
@@ -101,6 +110,8 @@ export async function createAdminTestAction(input: {
 }
 
 export async function deleteAdminTestAction(testId: string) {
+  await requireAdmin()
+
   const tests = readJson<Test[]>(MOCK_CUSTOM_TESTS_PATH, [])
   const next = tests.filter(t => t.id !== testId)
   if (next.length === tests.length) {
@@ -111,6 +122,8 @@ export async function deleteAdminTestAction(testId: string) {
 }
 
 export async function getAdminAttemptsAction() {
+  await requireAdmin()
+
   const attempts = readJson<TestAttempt[]>(MOCK_ATTEMPTS_PATH, [])
   const sorted = [...attempts].sort(
     (a, b) => new Date(b.submitted_at ?? b.started_at).getTime() - new Date(a.submitted_at ?? a.started_at).getTime()
@@ -119,8 +132,10 @@ export async function getAdminAttemptsAction() {
 }
 
 export async function toggleQuestionVerifiedAction(id: string, verified: boolean) {
+  await requireAdmin()
+
   const { updateQuestionAction } = await import('./question')
-  return updateQuestionAction(id, { verified })
+  return updateQuestionAction(id, { verified }, true /* isAdmin */)
 }
 
 export async function getAdminQuestionsForPickerAction(filters?: {
@@ -128,5 +143,7 @@ export async function getAdminQuestionsForPickerAction(filters?: {
   is_pyq?: boolean
   verified?: boolean
 }) {
+  await requireAdmin()
+
   return getQuestionsAction(filters)
 }

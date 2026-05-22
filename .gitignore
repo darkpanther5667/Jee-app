@@ -35,3 +35,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+
+# scratch / dev tooling
+/scratch
+windsurf.md
+
+# mock data files (contain no secrets but are runtime-generated)
+src/app/actions/mock_bookmarks*.json
+src/app/actions/mock_pyq_stats.json
+src/app/actions/mock_custom_tests.json
+src/app/actions/mock_attempts.json

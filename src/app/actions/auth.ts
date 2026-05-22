@@ -54,6 +54,23 @@ export async function getCurrentUser() {
 }
 
 // 2. SEND OTP
+// ─── FIX #24: In-memory rate limiting — max 3 OTP requests per number per 10min
+const otpRateMap = new Map<string, { count: number; windowStart: number }>()
+const OTP_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
+const OTP_MAX_ATTEMPTS = 3
+
+function checkOtpRateLimit(mobile: string): boolean {
+  const now = Date.now()
+  const entry = otpRateMap.get(mobile)
+  if (!entry || now - entry.windowStart > OTP_WINDOW_MS) {
+    otpRateMap.set(mobile, { count: 1, windowStart: now })
+    return true // allowed
+  }
+  if (entry.count >= OTP_MAX_ATTEMPTS) return false // blocked
+  entry.count++
+  return true // allowed
+}
+
 export async function sendOtpAction(mobile: string) {
   // Format phone number to E.164 if not already (e.g. add +91 for Indian mobile numbers)
   let formattedMobile = mobile.trim()
@@ -64,6 +81,11 @@ export async function sendOtpAction(mobile: string) {
     } else {
       return { success: false, error: 'Invalid mobile number. Please include country code.' }
     }
+  }
+
+  // Rate limit check
+  if (!checkOtpRateLimit(formattedMobile)) {
+    return { success: false, error: 'Too many OTP requests. Please wait 10 minutes before trying again.' }
   }
 
   // Check if Twilio Verify is configured and active
@@ -248,12 +270,10 @@ export async function verifyOtpAction(mobile: string, code: string) {
 }
 
 // 4. GOOGLE OAUTH MOCK/REAL
+// ─── FIX #8: Google OAuth no longer auto-mocks in dev when Supabase is live ──
 export async function signInWithGoogleAction() {
-  // In development mode, always use mock bypass for instant testing
-  // (Google OAuth in Supabase requires dashboard configuration for production)
-  const isDev = process.env.NODE_ENV !== 'production'
-
-  if (!isSupabaseConfigured || isDev) {
+  if (!isSupabaseConfigured) {
+    // Only mock when Supabase is genuinely not configured (no env vars)
     const mockUser = {
       id: 'mock-google-user-uuid',
       phone: null,
@@ -268,7 +288,7 @@ export async function signInWithGoogleAction() {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
       httpOnly: true,
-      secure: false, // dev mode, never secure
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax'
     })
 
@@ -276,8 +296,8 @@ export async function signInWithGoogleAction() {
   }
 
   // Production: Real Supabase Google OAuth (client handles the redirect)
-  return { 
-    success: true, 
+  return {
+    success: true,
     isMock: false,
   }
 }

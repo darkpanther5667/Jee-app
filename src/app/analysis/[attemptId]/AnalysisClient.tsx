@@ -74,13 +74,13 @@ export default function AnalysisClient({ attempt, test, questions }: AnalysisCli
         bySubject[q.subject].incorrect++
       }
 
-      // Simulate time per question for sandbox if time_spent isn't perfectly tracked yet
-      const simulatedTime = hasAnswer ? Math.floor(Math.random() * 120) + 30 : Math.floor(Math.random() * 20) + 5
-      bySubject[q.subject].time += simulatedTime
+      // Use actual tracked time_spent from responses, fall back to 0 if not tracked
+      const timeSpent = resp?.time_spent ?? 0
+      bySubject[q.subject].time += timeSpent
       
       timeScatterData.push({
         index: idx + 1,
-        time: simulatedTime,
+        time: timeSpent,
         status: !hasAnswer ? 'skipped' : isCorrect ? 'correct' : 'incorrect',
         subject: q.subject
       })
@@ -159,12 +159,12 @@ export default function AnalysisClient({ attempt, test, questions }: AnalysisCli
             <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-4">
               <div className="flex flex-col items-center md:items-start">
                 <span className="text-[10px] font-extrabold uppercase text-neutral-desc tracking-wider">Est. Rank</span>
-                <span className="font-bold text-slate-700">#4,210</span>
+                <span className="font-bold text-slate-700">{attempt.rank ? `#${attempt.rank.toLocaleString()}` : 'N/A'}</span>
               </div>
               <div className="w-px h-8 bg-slate-200 hidden md:block" />
               <div className="flex flex-col items-center md:items-start">
                 <span className="text-[10px] font-extrabold uppercase text-neutral-desc tracking-wider">Percentile</span>
-                <span className="font-bold text-slate-700">92.4 %ile</span>
+                <span className="font-bold text-slate-700">{attempt.percentile != null ? `${attempt.percentile.toFixed(2)} %ile` : 'N/A'}</span>
               </div>
               <div className="w-px h-8 bg-slate-200 hidden md:block" />
               <div className="flex flex-col items-center md:items-start">

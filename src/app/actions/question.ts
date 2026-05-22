@@ -220,7 +220,13 @@ export async function getQuestionByIdAction(id: string) {
 }
 
 // 3. CREATE QUESTION
+// ─── FIX #4: Only admins can create questions ─────────────────────────────────
 export async function createQuestionAction(questionData: Omit<Question, 'id' | 'created_at' | 'verified'>) {
+  const { isAdminSession } = await import('@/lib/admin/auth')
+  if (!(await isAdminSession())) {
+    return { success: false, error: 'Unauthorized: admin access required.' }
+  }
+
   if (!isSupabaseConfigured) {
     const mockList = readMockQuestions()
     const newQuestion: Question = {
@@ -261,7 +267,15 @@ export async function createQuestionAction(questionData: Omit<Question, 'id' | '
 }
 
 // 4. UPDATE QUESTION
-export async function updateQuestionAction(id: string, questionData: Partial<Question>) {
+// ─── FIX #4: isAdmin flag required — only admin.ts passes true ───────────────
+export async function updateQuestionAction(id: string, questionData: Partial<Question>, isAdmin = false) {
+  if (!isAdmin) {
+    const { isAdminSession } = await import('@/lib/admin/auth')
+    if (!(await isAdminSession())) {
+      return { success: false, error: 'Unauthorized: admin access required.' }
+    }
+  }
+
   if (!isSupabaseConfigured) {
     const mockList = readMockQuestions()
     const index = mockList.findIndex(q => q.id === id)
@@ -302,7 +316,13 @@ export async function updateQuestionAction(id: string, questionData: Partial<Que
 }
 
 // 5. DELETE QUESTION
+// ─── FIX #4: Only admins can delete questions ─────────────────────────────────
 export async function deleteQuestionAction(id: string) {
+  const { isAdminSession } = await import('@/lib/admin/auth')
+  if (!(await isAdminSession())) {
+    return { success: false, error: 'Unauthorized: admin access required.' }
+  }
+
   if (!isSupabaseConfigured) {
     const mockList = readMockQuestions()
     const filteredList = mockList.filter(q => q.id !== id)

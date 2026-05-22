@@ -3,35 +3,47 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Question } from '@/types/question'
 import { Test, UserResponse } from '@/types/test'
-import { submitTestAttemptAction } from '@/app/actions/test'
+import { submitTestAttemptAction, updateTestAttemptAction, logTabSwitchAction } from '@/app/actions/test'
 import TestTimer from '@/components/test/TestTimer'
 import QuestionPalette from '@/components/test/QuestionPalette'
 import QuestionCard from '@/components/test/QuestionCard'
-import { ChevronLeft, ChevronRight, Bookmark, RotateCcw, AlertTriangle, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Bookmark, RotateCcw, AlertTriangle, ShieldCheck, CheckCircle2, X, Maximize2 } from 'lucide-react'
 
 interface TestAttemptClientProps {
   test: Test
   initialQuestions: Question[]
   serverStartedAt: string
+  initialAttemptId?: string
 }
 
-export default function TestAttemptClient({ test, initialQuestions, serverStartedAt }: TestAttemptClientProps) {
+export default function TestAttemptClient({ test, initialQuestions, serverStartedAt, initialAttemptId }: TestAttemptClientProps) {
   // 1. Core State
   const [currentIndex, setCurrentIndex] = useState(0)
   const [responses, setResponses] = useState<Record<string, UserResponse>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const [finalScore, setFinalScore] = useState<number | null>(null)
-  const [attemptId, setAttemptId] = useState<string | null>(null)
+  const [attemptId, setAttemptId] = useState<string | null>(initialAttemptId ?? null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showFullscreenWarning, setShowFullscreenWarning] = useState(false)
+  const [tabSwitchCount, setTabSwitchCount] = useState(0)
+  const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false)
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null)
 
   // Timer tracking (started on mount)
   const startTimeRef = useRef<number>(0)
+  const questionStartTimeRef = useRef<number>(0)
   
   // Track subjects for tabs
   const subjects = Array.from(new Set(initialQuestions.map(q => q.subject)))
   
+  // FIX #22: removed duplicate const declarations that were below — these are the canonical ones
+  const currentQuestion = initialQuestions[currentIndex]
+  const currentResponse = responses[currentQuestion?.id]
+  
   useEffect(() => {
     startTimeRef.current = new Date(serverStartedAt).getTime()
+    questionStartTimeRef.current = Date.now()
     
     const initialResponses: Record<string, UserResponse> = {}
     initialQuestions.forEach((q, idx) => {
@@ -43,10 +55,99 @@ export default function TestAttemptClient({ test, initialQuestions, serverStarte
       }
     })
     setResponses(initialResponses)
+
+    // Request fullscreen on mount
+    const requestFullscreen = async () => {
+      try {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen()
+          setIsFullscreen(true)
+        }
+      } catch (err) {
+        console.log('Fullscreen request failed:', err)
+      }
+    }
+    requestFullscreen()
   }, [initialQuestions, serverStartedAt])
 
-  const currentQuestion = initialQuestions[currentIndex]
-  const currentResponse = responses[currentQuestion?.id]
+  // Track per-question time
+  useEffect(() => {
+    questionStartTimeRef.current = Date.now()
+    
+    return () => {
+      // When question changes, update time spent on previous question
+      if (currentQuestion) {
+        const timeSpent = Math.floor((Date.now() - questionStartTimeRef.current) / 1000)
+        setResponses(prev => ({
+          ...prev,
+          [currentQuestion.id]: {
+            ...prev[currentQuestion.id],
+            time_spent: (prev[currentQuestion.id]?.time_spent || 0) + timeSpent
+          }
+        }))
+      }
+    }
+  }, [currentIndex, currentQuestion])
+
+  // Tab switch detection (anti-cheat)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.hidden && attemptId && !isFinished) {
+        const newCount = tabSwitchCount + 1
+        setTabSwitchCount(newCount)
+        
+        // Log to Supabase
+        await logTabSwitchAction(attemptId)
+        
+        // Warn user
+        if (newCount >= 3) {
+          alert('Warning: Multiple tab switches detected. This may affect your test validity.')
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [attemptId, tabSwitchCount, isFinished])
+
+  // Fullscreen change detection
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = document.fullscreenElement !== null
+      setIsFullscreen(isCurrentlyFullscreen)
+      
+      if (!isCurrentlyFullscreen && !isFinished) {
+        setShowFullscreenWarning(true)
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [isFinished])
+
+  // Prevent right-click, copy, paste (anti-cheat)
+  useEffect(() => {
+    const preventDefault = (e: Event) => {
+      e.preventDefault()
+    }
+
+    const preventContextMenu = (e: MouseEvent) => {
+      e.preventDefault()
+      return false
+    }
+
+    document.addEventListener('contextmenu', preventContextMenu)
+    document.addEventListener('copy', preventDefault)
+    document.addEventListener('paste', preventDefault)
+    document.addEventListener('cut', preventDefault)
+
+    return () => {
+      document.removeEventListener('contextmenu', preventContextMenu)
+      document.removeEventListener('copy', preventDefault)
+      document.removeEventListener('paste', preventDefault)
+      document.removeEventListener('cut', preventDefault)
+    }
+  }, [])
 
   // 2. Navigation & Status Logic
   const handleNavigate = (newIndex: number) => {
@@ -66,6 +167,18 @@ export default function TestAttemptClient({ test, initialQuestions, serverStarte
       }
     })
     setCurrentIndex(newIndex)
+  }
+
+  const handleRequestFullscreen = async () => {
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen()
+        setIsFullscreen(true)
+        setShowFullscreenWarning(false)
+      }
+    } catch (err) {
+      console.log('Fullscreen request failed:', err)
+    }
   }
 
   const handleSectionChange = (subject: string) => {
@@ -134,7 +247,7 @@ export default function TestAttemptClient({ test, initialQuestions, serverStarte
 
     const timeTakenSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000)
     
-    const result = await submitTestAttemptAction(test.id, responses, timeTakenSeconds)
+    const result = await submitTestAttemptAction(attemptId!, test.id, responses, timeTakenSeconds)
     
     setIsSubmitting(false)
     setIsFinished(true)
@@ -144,7 +257,17 @@ export default function TestAttemptClient({ test, initialQuestions, serverStarte
     }
   }, [isFinished, isSubmitting, test.id, responses])
 
-  const triggerManualSubmit = () => {
+  // Autosave every 10 seconds
+useEffect(() => {
+  if (!attemptId) return;
+  const interval = setInterval(() => {
+    const timeTaken = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    updateTestAttemptAction(attemptId, responses, timeTaken);
+  }, 10000);
+  return () => clearInterval(interval);
+}, [attemptId, responses]);
+
+const triggerManualSubmit = () => {
     const answeredCount = Object.values(responses).filter(r => r.status === 'answered' || r.status === 'answered_marked').length
     const confirmSubmit = window.confirm(`You have answered ${answeredCount} out of ${initialQuestions.length} questions. Are you sure you want to finally submit your exam?`)
     if (confirmSubmit) {

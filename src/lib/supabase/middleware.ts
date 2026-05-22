@@ -9,20 +9,10 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
-  // In development, if a mock session cookie exists, use it to bypass Supabase auth
-  const isDev = process.env.NODE_ENV !== 'production'
   const mockSessionCookie = request.cookies.get('mock_session')?.value
-  
-  if (isDev && mockSessionCookie) {
-    try {
-      const user = JSON.parse(mockSessionCookie)
-      return { supabaseResponse, user }
-    } catch {
-      // Ignored invalid JSON cookies
-    }
-  }
 
-  // If Supabase is not configured, implement cookie-based mock session parsing
+  // ─── FIX #7: Mock session is ONLY valid when Supabase is not configured ──────
+  // Removed the isDev bypass — mock sessions must never work when Supabase is live.
   if (!supabaseUrl || !supabaseAnonKey) {
     let user = null
     if (mockSessionCookie) {
@@ -35,6 +25,7 @@ export async function updateSession(request: NextRequest) {
     return { supabaseResponse, user }
   }
 
+  // Supabase is configured — always use real auth, never trust mock_session cookie
   const supabase = createServerClient(
     supabaseUrl,
     supabaseAnonKey,
@@ -44,7 +35,6 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Fixed unused 'options' destructured variable
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
@@ -57,7 +47,6 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // This is required to refresh session cookie if expired
   let user = null
   try {
     const { data } = await supabase.auth.getUser()

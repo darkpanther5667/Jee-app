@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS public.users (
   city text,
   state text,
   created_at timestamptz DEFAULT timezone('utc'::text, now()),
-  subscription_tier text DEFAULT 'free' CHECK (subscription_tier IN ('free', 'pro', 'elite'))
+  subscription_tier text DEFAULT 'free' CHECK (subscription_tier IN ('free', 'pro', 'elite')),
+  role text DEFAULT 'student' CHECK (role IN ('student', 'admin', 'super_admin'))
 );
 
 -- Enable RLS on users table
@@ -105,13 +106,13 @@ ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can view verified questions" 
   ON public.questions 
   FOR SELECT 
-  USING (verified = true OR auth.uid() IN (SELECT id FROM public.users WHERE subscription_tier = 'elite'));
+  USING (verified = true OR auth.uid() IN (SELECT id FROM public.users WHERE role IN ('admin', 'super_admin')));
 
 CREATE POLICY "Admins can modify questions" 
   ON public.questions 
   FOR ALL 
-  USING (auth.uid() = created_by OR auth.uid() IN (SELECT id FROM public.users WHERE subscription_tier = 'elite'))
-  WITH CHECK (auth.uid() = created_by OR auth.uid() IN (SELECT id FROM public.users WHERE subscription_tier = 'elite'));
+  USING (auth.uid() = created_by OR auth.uid() IN (SELECT id FROM public.users WHERE role IN ('admin', 'super_admin')))
+  WITH CHECK (auth.uid() = created_by OR auth.uid() IN (SELECT id FROM public.users WHERE role IN ('admin', 'super_admin')));
 
 -- 4. TESTS TABLE
 CREATE TABLE IF NOT EXISTS public.tests (
@@ -152,8 +153,8 @@ CREATE POLICY "Anyone can view tests"
 CREATE POLICY "Admins can modify tests" 
   ON public.tests 
   FOR ALL 
-  USING (auth.uid() IN (SELECT id FROM public.users WHERE subscription_tier = 'elite'))
-  WITH CHECK (auth.uid() IN (SELECT id FROM public.users WHERE subscription_tier = 'elite'));
+  USING (auth.uid() IN (SELECT id FROM public.users WHERE role IN ('admin', 'super_admin')))
+  WITH CHECK (auth.uid() IN (SELECT id FROM public.users WHERE role IN ('admin', 'super_admin')));
 
 -- 5. TEST ATTEMPTS TABLE
 CREATE TABLE IF NOT EXISTS public.attempts (
@@ -215,8 +216,8 @@ CREATE POLICY "Anyone can view PYQ papers"
 CREATE POLICY "Admins can modify PYQ papers" 
   ON public.pyq_papers 
   FOR ALL 
-  USING (auth.uid() IN (SELECT id FROM public.users WHERE subscription_tier = 'elite'))
-  WITH CHECK (auth.uid() IN (SELECT id FROM public.users WHERE subscription_tier = 'elite'));
+  USING (auth.uid() IN (SELECT id FROM public.users WHERE role IN ('admin', 'super_admin')))
+  WITH CHECK (auth.uid() IN (SELECT id FROM public.users WHERE role IN ('admin', 'super_admin')));
 
 -- 7. SUBSCRIPTIONS TABLE
 CREATE TABLE IF NOT EXISTS public.subscriptions (
@@ -295,3 +296,59 @@ CREATE POLICY "Users can modify their own topic performance"
   FOR ALL 
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+
+-- 10. CUSTOM TESTS TABLE (Replaces JSON storage)
+CREATE TABLE IF NOT EXISTS public.custom_tests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  test_type text NOT NULL CHECK (test_type IN ('pyq_paper', 'custom')),
+  exam_pattern text NOT NULL CHECK (exam_pattern IN ('jee_main', 'jee_advanced')),
+  subjects text[] NOT NULL,
+  chapters_covered jsonb,
+  duration_minutes int NOT NULL,
+  total_marks int NOT NULL,
+  question_ids uuid[] NOT NULL,
+  created_at timestamptz DEFAULT timezone('utc'::text, now())
+);
+
+-- Enable RLS on custom_tests
+ALTER TABLE public.custom_tests ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for custom_tests
+CREATE POLICY "Users can view their own custom tests" 
+  ON public.custom_tests 
+  FOR SELECT 
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own custom tests" 
+  ON public.custom_tests 
+  FOR INSERT 
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own custom tests" 
+  ON public.custom_tests 
+  FOR DELETE 
+  USING (auth.uid() = user_id);
+
+-- 11. TAB SWITCH LOGS (Anti-cheat)
+CREATE TABLE IF NOT EXISTS public.tab_switch_logs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  attempt_id uuid NOT NULL REFERENCES public.attempts(id) ON DELETE CASCADE,
+  switched_at timestamptz DEFAULT timezone('utc'::text, now()),
+  tab_count int DEFAULT 1
+);
+
+-- Enable RLS on tab_switch_logs
+ALTER TABLE public.tab_switch_logs ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for tab_switch_logs
+CREATE POLICY "Users can view their own tab switch logs" 
+  ON public.tab_switch_logs 
+  FOR SELECT 
+  USING (auth.uid() = (SELECT user_id FROM public.attempts WHERE id = attempt_id));
+
+CREATE POLICY "System can insert tab switch logs" 
+  ON public.tab_switch_logs 
+  FOR INSERT 
+  WITH CHECK (true);

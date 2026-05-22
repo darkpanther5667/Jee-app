@@ -1,5 +1,5 @@
 import React from 'react'
-import { getTestConfigAction } from '@/app/actions/test'
+import { getTestConfigAction, createTestAttemptAction } from '@/app/actions/test'
 import TestAttemptClient from './TestAttemptClient'
 import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -16,7 +16,7 @@ export default async function TestAttemptPage({ params }: { params: { id: string
         <p className="text-neutral-desc max-w-md mx-auto mb-6">
           {configRes.error || 'The test you are trying to access does not exist or has been removed.'}
         </p>
-        <Link 
+        <Link
           href="/dashboard"
           className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-premium hover:bg-primary-dark transition-all"
         >
@@ -27,12 +27,16 @@ export default async function TestAttemptPage({ params }: { params: { id: string
   }
 
   const serverStartedAt = new Date().toISOString()
+  // Create a new attempt for this user and test
+  const attemptResult = await createTestAttemptAction(params.id)
+  const attemptId = attemptResult.success ? attemptResult.attemptId : null
 
   return (
-    <TestAttemptClient 
-      test={configRes.test} 
+    <TestAttemptClient
+      test={configRes.test}
       initialQuestions={configRes.questions}
       serverStartedAt={serverStartedAt}
+      initialAttemptId={attemptId}
     />
   )
 }

@@ -1,5 +1,5 @@
 # 🚀 MASTER PROMPT — JEE TEST SERIES APP (INDUSTRY-LEVEL)
-### File: `windsurf.md` | Use with Gemini 2.5 Pro / Claude Sonnet / GPT-4o/Windsurf
+### File: `gemini.md` | Use with Gemini 2.5 Pro / Claude Sonnet / GPT-4o
 ---
 
 ## ⚠️ HOW TO USE THIS FILE
