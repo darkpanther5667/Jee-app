@@ -1,39 +1,13 @@
-import { createServerClient, createBrowserClient, parse, stringify } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+// Browser-only Supabase client — safe to import in client components
+// Does NOT import next/headers (server-only)
+import { createBrowserClient } from '@supabase/ssr'
 
-export function createServerSupabaseClient() {
-  const cookieStore = cookies();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          try {
-            cookieStore.set({ name, value, ...options });
-          } catch (error) {
-            // Handle cookie set error
-          }
-        },
-        remove(name: string, options: any) {
-          try {
-            cookieStore.set({ name, value: '', ...options });
-          } catch (error) {
-            // Handle cookie remove error
-          }
-        },
-      },
-    }
-  );
-}
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey)
 
-export function createBrowserSupabaseClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+export function createClient() {
+  if (!isSupabaseConfigured) return null
+  return createBrowserClient(supabaseUrl!, supabaseAnonKey!)
 }
